@@ -13,6 +13,12 @@ __pycache__/
 .coverage
 htmlcov/
 
+# Outillage de travail — hors du dépôt public
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+Product-Engineer/
+
 # OS / éditeurs
 .DS_Store
 Thumbs.db

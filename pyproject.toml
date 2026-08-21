@@ -38,6 +38,9 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Les tests assertent : `assert` et les litteraux nus y sont le langage normal.
 "tests/**/*.py" = ["S101", "PLR2004", "INP001", "D100", "D103", "ANN201"]
+# Les scripts d'outillage parlent a l'operateur (print) et pilotent une CLI (gh) :
+# ce sont leurs deux raisons d'exister, pas des negligences.
+"scripts/**/*.py" = ["T201", "INP001"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -53,7 +56,7 @@ docstring-code-format = true
 # --------------------------------------------------------------------------
 [tool.mypy]
 python_version = "3.12"
-files = ["tests"]
+files = ["tests", "scripts"]
 strict = true
 warn_unreachable = true
 disallow_any_explicit = true
