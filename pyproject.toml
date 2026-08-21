@@ -1,7 +1,7 @@
 [project]
 name = "steerfox-medallion"
 version = "0.1.0"
-description = "Pipeline medaillon ClickHouse — absorber la revision tardive des chiffres publicitaires"
+description = "ClickHouse medallion pipeline — absorbing late restatements of ad spend figures"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = []
@@ -79,4 +79,5 @@ enable_error_code = [
 minversion = "8.0"
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config --showlocals --tb=short"
+markers = ["foundation: needs the docker stack (make up) — run by the CI « foundation » job"]
 filterwarnings = ["error"]
