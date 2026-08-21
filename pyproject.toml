@@ -4,12 +4,17 @@ version = "0.1.0"
 description = "ClickHouse medallion pipeline — absorbing late restatements of ad spend figures"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    "boto3>=1.35",
+    "pyarrow>=19.0",
+]
 
 [dependency-groups]
 dev = [
+    "boto3-stubs[s3]>=1.35",
     "mypy>=1.15",
     "pre-commit>=4.1",
+    "pyarrow-stubs>=17.0",
     "pytest>=8.3",
     "ruff>=0.9",
 ]
@@ -23,7 +28,7 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["tests"]
+src = ["."]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -41,6 +46,8 @@ ignore = [
 # Les scripts d'outillage parlent a l'operateur (print) et pilotent une CLI (gh) :
 # ce sont leurs deux raisons d'exister, pas des negligences.
 "scripts/**/*.py" = ["T201", "INP001"]
+# A command-line entry point reports to the operator: that is what print is for.
+"fixture_generator/__main__.py" = ["T201"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -56,7 +63,7 @@ docstring-code-format = true
 # --------------------------------------------------------------------------
 [tool.mypy]
 python_version = "3.12"
-files = ["tests", "scripts"]
+files = ["tests", "scripts", "fixture_generator"]
 strict = true
 warn_unreachable = true
 disallow_any_explicit = true
@@ -78,6 +85,7 @@ enable_error_code = [
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-ra --strict-markers --strict-config --showlocals --tb=short"
 markers = ["foundation: needs the docker stack (make up) — run by the CI « foundation » job"]
 filterwarnings = ["error"]
