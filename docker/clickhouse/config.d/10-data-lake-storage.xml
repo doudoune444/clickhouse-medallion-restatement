@@ -1,0 +1,22 @@
+<clickhouse>
+    <storage_configuration>
+        <disks>
+            <data_lake>
+                <type>s3</type>
+                <endpoint>http://minio:10000/medallion/</endpoint>
+                <access_key_id from_env="MINIO_ROOT_USER"/>
+                <secret_access_key from_env="MINIO_ROOT_PASSWORD"/>
+                <metadata_path>/var/lib/clickhouse/disks/data_lake/</metadata_path>
+            </data_lake>
+        </disks>
+        <policies>
+            <store_on_data_lake>
+                <volumes>
+                    <data_lake>
+                        <disk>data_lake</disk>
+                    </data_lake>
+                </volumes>
+            </store_on_data_lake>
+        </policies>
+    </storage_configuration>
+</clickhouse>
