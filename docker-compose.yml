@@ -1,0 +1,69 @@
+# Derived from ClickHouse/examples · docker-compose-recipes/recipes/ch-and-minio-S3 (see README).
+name: steerfox-medallion
+
+services:
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: steerfox-minio
+    command: server /data --address :10000 --console-address :10001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is missing, see .env.example}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is missing, see .env.example}
+    ports:
+      - "127.0.0.1:10000:10000"
+      - "127.0.0.1:10001:10001"
+    volumes:
+      - minio-data:/data
+
+  create-buckets:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    container_name: steerfox-create-buckets
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        until mc alias set local http://minio:10000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        do sleep 1
+        done
+        mc mb --ignore-existing local/lake
+        mc mb --ignore-existing local/medallion
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8.31.9
+    container_name: steerfox-clickhouse
+    depends_on:
+      minio:
+        condition: service_started
+      create-buckets:
+        condition: service_completed_successfully
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    ports:
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - ./docker/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
+      - ./sql:/sql:ro
+      - clickhouse-data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 10s
+
+volumes:
+  clickhouse-data:
+  minio-data:

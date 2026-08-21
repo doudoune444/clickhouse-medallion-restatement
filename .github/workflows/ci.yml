@@ -13,26 +13,26 @@ env:
   UV_VERSION: "0.12.5"
 
 jobs:
-  # Une PR resout une issue du backlog : sans mot-cle de fermeture, l'issue resterait
-  # ouverte apres le merge et le backlog cesserait de refleter l'etat reel du projet.
-  lien-issue:
-    name: La PR ferme une issue
+  # A PR resolves a backlog issue: without a closing keyword the issue would stay
+  # open after the merge and the backlog would stop reflecting the real state of the project.
+  issue-link:
+    name: The PR closes an issue
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     steps:
-      - name: Chercher un mot-cle de fermeture dans le corps de la PR
+      - name: Look for a closing keyword in the PR body
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          motif='(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'
-          if ! printf '%s' "$PR_BODY" | grep -qiE "$motif"; then
-            echo "::error::Cette PR ne ferme aucune issue. Ajouter « Closes #N » dans sa description."
+          pattern='(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'
+          if ! printf '%s' "$PR_BODY" | grep -qiE "$pattern"; then
+            echo "::error::This PR closes no issue. Add « Closes #N » to its description."
             exit 1
           fi
-          printf '%s' "$PR_BODY" | grep -ioE "$motif"
+          printf '%s' "$PR_BODY" | grep -ioE "$pattern"
 
-  qualite:
-    name: Linters et tests
+  quality:
+    name: Linters and tests
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -58,5 +58,28 @@ jobs:
         env:
           SKIP: no-commit-to-branch
 
-      - name: pytest
-        run: uv run pytest
+      - name: pytest (without the foundation tests)
+        run: uv run pytest -m "not foundation"
+
+  foundation:
+    name: Executable foundation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+
+      - run: uv sync --all-groups
+
+      - run: make up
+
+      - run: make test
+
+      - run: make scenarios
+
+      - name: Container logs
+        if: failure()
+        run: docker compose logs --tail=200
