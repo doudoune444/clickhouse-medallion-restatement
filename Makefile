@@ -33,5 +33,9 @@ format: ## Applique les corrections automatiques
 test: ## Joue la suite de tests
 	$(RUN) pytest
 
+.PHONY: issues
+issues: ## Publie le backlog sur GitHub Issues (APPLY=1 pour creer reellement)
+	$(RUN) python scripts/backlog_to_issues.py $(if $(APPLY),--apply,)
+
 .PHONY: ci
 ci: lint test ## Ce que la CI execute
