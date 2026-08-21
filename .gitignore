@@ -3,6 +3,9 @@
 *.pem
 *.key
 
+# Donnees generees — reproductibles par `make fixture`
+fixtures/
+
 # Python
 __pycache__/
 *.py[cod]
