@@ -70,6 +70,10 @@ seed: ## Load the deterministic baseline rows into bronze.ads_raw
 fixture: | .env ## Generate fixtures/mini and publish it to s3://lake/raw (make fixture SEED=42)
 	$(RUN) python -m fixture_generator --seed $(SEED)
 
+.PHONY: ingest
+ingest: ## Reload one whole extraction into Bronze (make ingest SOURCE=google_ads EXTRACTED_AT=2026-07-16)
+	@scripts/ingest-extraction.sh "$(SOURCE)" "$(EXTRACTED_AT)"
+
 .PHONY: query
 query: ## Run one SQL query against ClickHouse (make query Q="SELECT 1")
 	@$(CLICKHOUSE_CLIENT) --query "$(Q)"

@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.docker_engine import needs_docker_engine
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COMPOSE_FILE = REPO_ROOT / "docker-compose.yml"
 COMMAND_TIMEOUT_SECONDS = 900
@@ -32,25 +34,7 @@ def _run(command: list[str]) -> str:
     return completed.stdout
 
 
-def _docker_engine_responds() -> bool:
-    """The binary alone is not enough: under WSL the shim exists with no engine behind it."""
-    try:
-        probe = subprocess.run(
-            ["docker", "compose", "version"],  # noqa: S607
-            capture_output=True,
-            timeout=30,
-            check=False,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return False
-    return probe.returncode == 0
-
-
 needs_running_stack = pytest.mark.foundation
-needs_docker_engine = pytest.mark.skipif(
-    not _docker_engine_responds(),
-    reason="no docker engine on this machine: R1 and R2 are verified by CI",
-)
 
 
 def run_make(*targets: str) -> str:
