@@ -21,6 +21,8 @@ pipeline lui-même n'existe pas encore. Les stories qui le livrent sont ouvertes
 make install     # dépendances + hooks pre-commit
 make up          # ClickHouse + MinIO + DDL — relançable sans dérive
 make seed        # jeu de référence déterministe dans bronze.ads_raw
+make fixture     # génère fixtures/mini et la publie dans s3://lake/raw
+make ingest SOURCE=google_ads EXTRACTED_AT=2026-07-16   # recharge une extraction vers Bronze
 make scenarios   # rejoue scenarios/*.sh
 make test        # pytest
 make down        # détruit la stack ET ses volumes
@@ -45,6 +47,7 @@ docs/                           décisions techniques argumentées
 scenarios/                      scénarios exécutables, un par story
 scripts/                        outillage du dépôt
 sql/ddl/                        DDL versionné, appliqué par `make up`
+sql/ingest/                     projection d'une extraction S3 vers Bronze, une par source
 sql/seed/                       jeu de référence déterministe
 tests/                          suite de tests
 ```
