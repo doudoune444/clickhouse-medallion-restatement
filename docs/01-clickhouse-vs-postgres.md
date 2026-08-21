@@ -10,7 +10,7 @@
 - **OLTP** — Charge de travail faite de nombreuses petites opérations qui lisent ou modifient quelques lignes précises (créer un compte, valider une commande).
 - **OLAP** — Charge de travail faite de peu de requêtes qui balayent des millions de lignes pour produire des agrégats (CA par campagne sur 90 jours).
 - **Le vrai clivage** — Ce n'est pas « quelle base est la meilleure » mais « quelle forme de charge de travail », et une base optimisée pour l'une est structurellement mauvaise pour l'autre.
-- **Pourquoi le CTO dit « mieux »** — Dans son contexte (données publicitaires massives, append-only, agrégations lourdes) ClickHouse est effectivement 10 à 100× plus rapide que Postgres, mais l'affirmation n'est pas universelle.
+- **Pourquoi on entend souvent que ClickHouse est « mieux »** — Sur une charge de travail publicitaire (volumes massifs, append-only, agrégations lourdes) ClickHouse est effectivement 10 à 100× plus rapide que Postgres, mais l'affirmation n'est pas universelle.
 - **La formulation juste** — « ClickHouse est meilleur *pour ce workload* », et savoir dire ça est exactement ce qui distingue un ingénieur data d'un suiveur de mode.
 
 ---
@@ -121,7 +121,7 @@
 
 ## 10. Ce que je retiens en une phrase
 
-- **La réponse à donner en entretien** — ClickHouse et Postgres ne sont pas concurrents mais complémentaires, et le choix se déduit de la forme de la charge de travail : append-only et agrégations lourdes pour ClickHouse, transactions et intégrité pour Postgres.
+- **Ce qu'il faut retenir** — ClickHouse et Postgres ne sont pas concurrents mais complémentaires, et le choix se déduit de la forme de la charge de travail : append-only et agrégations lourdes pour ClickHouse, transactions et intégrité pour Postgres.
 
 ---
 
