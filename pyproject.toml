@@ -1,0 +1,79 @@
+[project]
+name = "ads-medallion"
+version = "0.1.0"
+description = "Pipeline medaillon ClickHouse — absorber la revision tardive des chiffres publicitaires"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15",
+    "pre-commit>=4.1",
+    "pytest>=8.3",
+    "ruff>=0.9",
+]
+
+[tool.uv]
+package = false
+
+# --------------------------------------------------------------------------
+# ruff — lint + format. select = ALL, chaque exclusion est justifiee.
+# --------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["tests"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203",   # incompatible avec D211 (une seule des deux peut s'appliquer)
+    "D213",   # incompatible avec D212 (idem)
+    "COM812", # gere par ruff format, conflit si active
+    "ISC001", # gere par ruff format, conflit si active
+    "CPY001", # pas d'entete de copyright dans ce depot
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Les tests assertent : `assert` et les litteraux nus y sont le langage normal.
+"tests/**/*.py" = ["S101", "PLR2004", "INP001", "D100", "D103", "ANN201"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# --------------------------------------------------------------------------
+# mypy — strict, plus les codes d'erreur optionnels.
+# --------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+files = ["tests"]
+strict = true
+warn_unreachable = true
+disallow_any_explicit = true
+disallow_any_decorated = true
+disallow_any_unimported = true
+no_implicit_reexport = true
+show_error_codes = true
+pretty = true
+enable_error_code = [
+    "redundant-expr",
+    "possibly-undefined",
+    "truthy-bool",
+    "truthy-iterable",
+    "ignore-without-code",
+    "unused-awaitable",
+    "explicit-override",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --showlocals --tb=short"
+filterwarnings = ["error"]

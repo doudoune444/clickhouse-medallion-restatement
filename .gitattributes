@@ -1,0 +1,4 @@
+# Normalisation des fins de ligne — le dépôt vit sous WSL2, l'éditeur sous Windows.
+* text=auto eol=lf
+
+Makefile text eol=lf
