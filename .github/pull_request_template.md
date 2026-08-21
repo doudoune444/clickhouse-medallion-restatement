@@ -9,8 +9,8 @@ Un R non couvert se dit ici plutôt qu'il ne se tait.
 
 - **R1** — <règle> : <cas concret, valeurs avant → après>.
 
-Puis un paragraphe libre : la décision d'architecture, l'ordre d'application des règles,
-ce que la PR déplace ailleurs. Pas de liste de fichiers, git la donne déjà.
+Les puces et rien d'autre : ni paragraphe d'architecture, ni liste de fichiers. La
+décision se documente dans `docs/`, et git donne déjà le diff.
 -->
 
 ## Tester
