@@ -4,6 +4,13 @@
 
 .DEFAULT_GOAL := help
 
+# The lake credentials live in .env for docker compose; the fixture generator
+# reaches MinIO from the host and needs them in its own environment.
+-include .env
+export MINIO_ROOT_USER MINIO_ROOT_PASSWORD
+
+SEED ?= 42
+
 UV                := uv
 RUN               := uv run
 COMPOSE           := docker compose
@@ -58,6 +65,10 @@ seed: ## Load the deterministic baseline rows into bronze.ads_raw
 		echo "  seed  $$f"; \
 		$(CLICKHOUSE_CLIENT) --queries-file "/$$f" || exit 1; \
 	done
+
+.PHONY: fixture
+fixture: | .env ## Generate fixtures/mini and publish it to s3://lake/raw (make fixture SEED=42)
+	$(RUN) python -m fixture_generator --seed $(SEED)
 
 .PHONY: query
 query: ## Run one SQL query against ClickHouse (make query Q="SELECT 1")
