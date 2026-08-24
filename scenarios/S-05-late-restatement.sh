@@ -22,7 +22,6 @@ PIVOT_CAMPAIGN_LABEL="google_ads acct_01 camp_003 2026-07-15"
 INITIAL_SPEND_EUR=12345.000000
 INITIAL_REVENUE_EUR=61725.000000
 INITIAL_CAMPAIGN_CONVERSIONS=400
-ROAS_DECIMALS=4
 INITIAL_ROAS=5.0000
 RESTATED_REVENUE_EUR=62802.500000
 RESTATED_CAMPAIGN_CONVERSIONS=407
@@ -52,13 +51,9 @@ flagship_row() {
 	silver "$1" "$PIVOT_CAMPAIGN_DAY AND product_id = '$FLAGSHIP_PRODUCT_ID'"
 }
 
+# Gold stores the components only: the ratios come from the view that derives them.
 pivot_aggregate() {
-	query_clickhouse --query "SELECT $1 FROM gold.campaign_daily WHERE $PIVOT_CAMPAIGN_DAY"
-}
-
-# ROAS is a ratio of sums, read at query time — Gold stores the components only.
-pivot_roas() {
-	pivot_aggregate "toDecimal64(round(revenue_eur / spend_eur, $ROAS_DECIMALS), $ROAS_DECIMALS)"
+	query_clickhouse --query "SELECT $1 FROM gold.campaign_daily_metrics WHERE $PIVOT_CAMPAIGN_DAY"
 }
 
 # A scenario that only asserts asks to be believed; printing both states lets the reader
@@ -73,7 +68,7 @@ report_state() {
 		"| spend_eur=$(pivot_aggregate "spend_eur")" \
 		"revenue_eur=$(pivot_aggregate "revenue_eur")" \
 		"conversions=$(pivot_aggregate "conversions")" \
-		"roas=$(pivot_roas)"
+		"roas=$(pivot_aggregate "roas")"
 }
 
 publish_layers() {
@@ -109,7 +104,7 @@ check "before the restatement · aggregated revenue" "$INITIAL_REVENUE_EUR" \
 check "before the restatement · aggregated conversions" "$INITIAL_CAMPAIGN_CONVERSIONS" \
 	"$(pivot_aggregate "conversions")"
 check "before the restatement · ROAS" "$INITIAL_ROAS" \
-	"$(pivot_roas)"
+	"$(pivot_aggregate "roas")"
 
 ingest_restatement
 report_state "after the restatement of $RESTATEMENT_EXTRACTION_DAY"
@@ -123,7 +118,7 @@ check "R2 · Gold revenue reflects the restatement" "$RESTATED_REVENUE_EUR" \
 check "R2 · Gold conversions reflect the restatement" "$RESTATED_CAMPAIGN_CONVERSIONS" \
 	"$(pivot_aggregate "conversions")"
 check "R2 · the ROAS follows" "$RESTATED_ROAS" \
-	"$(pivot_roas)"
+	"$(pivot_aggregate "roas")"
 check "R2 · the spend was not revised" "$INITIAL_SPEND_EUR" "$(pivot_aggregate "spend_eur")"
 
 silver_totals=$(silver "count(), sum(spend_eur), sum(conversions)")
