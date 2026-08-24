@@ -20,6 +20,11 @@ for report_month in $report_months; do
 		--param_staging_table "$STAGING_TABLE" \
 		--param_report_month "$report_month" \
 		--queries-file "$AGGREGATION_FILE"
+	if ! scripts/check-data-contracts.sh "$STAGING_TABLE"; then
+		echo "  gold  BLOCKED report_month=$report_month — a contract is red, the partition already published stays served"
+		query_clickhouse --query "DROP TABLE gold.$STAGING_TABLE"
+		exit 1
+	fi
 	query_clickhouse --query "ALTER TABLE $GOLD_TABLE
 	                          REPLACE PARTITION ID '$report_month'
 	                          FROM gold.$STAGING_TABLE"
