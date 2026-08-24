@@ -3,51 +3,24 @@
 from __future__ import annotations
 
 import re
-import subprocess
-from pathlib import Path
 
 import pytest
 
+from tests.clickhouse_client import REPO_ROOT, query_clickhouse, run, run_make
 from tests.docker_engine import needs_docker_engine
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 COMPOSE_FILE = REPO_ROOT / "docker-compose.yml"
-COMMAND_TIMEOUT_SECONDS = 900
 COUNT_MEDALLION_TABLES_QUERY = (
     "SELECT count() FROM system.tables WHERE database IN ('bronze', 'silver', 'gold')"
 )
 BRONZE_BASELINE_FINGERPRINT_QUERY = "SELECT count(), sum(cityHash64(*)) FROM bronze.ads_raw"
 
 
-def _run(command: list[str]) -> str:
-    completed = subprocess.run(  # noqa: S603
-        command,
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=COMMAND_TIMEOUT_SECONDS,
-        check=False,
-    )
-    assert completed.returncode == 0, (
-        f"`{' '.join(command)}` failed ({completed.returncode}):\n{completed.stderr}"
-    )
-    return completed.stdout
-
-
 needs_running_stack = pytest.mark.foundation
 
 
-def run_make(*targets: str) -> str:
-    return _run(["make", *targets])
-
-
-def query_clickhouse(query: str) -> str:
-    inside_container = ["docker", "compose", "exec", "-T", "clickhouse", "clickhouse-client"]
-    return _run([*inside_container, "--query", query]).strip()
-
-
 def container_ids() -> list[str]:
-    return sorted(_run(["docker", "compose", "ps", "--all", "--quiet"]).split())
+    return sorted(run(["docker", "compose", "ps", "--all", "--quiet"]).split())
 
 
 def medallion_table_count() -> str:

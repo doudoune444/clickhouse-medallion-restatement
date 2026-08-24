@@ -74,6 +74,13 @@ fixture: | .env ## Generate fixtures/mini and publish it to s3://lake/raw (make 
 ingest: ## Reload one whole extraction into Bronze (make ingest SOURCE=google_ads EXTRACTED_AT=2026-07-16)
 	@scripts/ingest-extraction.sh "$(SOURCE)" "$(EXTRACTED_AT)"
 
+.PHONY: silver
+silver: ## Conform every Bronze source into silver.ads_daily
+	@for f in sql/transform/*.sql; do \
+		echo "  silver  $$f"; \
+		$(CLICKHOUSE_CLIENT) --queries-file "/$$f" || exit 1; \
+	done
+
 .PHONY: query
 query: ## Run one SQL query against ClickHouse (make query Q="SELECT 1")
 	@$(CLICKHOUSE_CLIENT) --query "$(Q)"

@@ -21,8 +21,12 @@ check() {
 	fi
 }
 
+# Bronze keeps every extraction side by side, the late restatement included: an assertion
+# about one object must name the partition it belongs to, or it reads its neighbours too.
 google_partition() {
-	query_clickhouse --query "SELECT $1 FROM bronze.google_ads_raw WHERE _extracted_at = '$2'"
+	local expression=$1 extraction_day=$2 extra_predicate=${3:-}
+	query_clickhouse --query "SELECT $expression FROM bronze.google_ads_raw
+	                          WHERE _extracted_at = '$extraction_day' $extra_predicate"
 }
 
 # The fixture ships one object per extraction; R3 needs an extraction holding two.
@@ -41,9 +45,9 @@ check "R1 · cost_micros stays an integer" "Int64" \
 	                             WHERE database = 'bronze' AND table = 'google_ads_raw'
 	                               AND name = 'cost_micros'")"
 check "R1 · no conversion to euros" "$PIVOT_COST_MICROS" \
-	"$(query_clickhouse --query "SELECT cost_micros FROM bronze.google_ads_raw
-	                             WHERE account_id = 'acct_01' AND campaign_id = 'camp_003'
-	                               AND product_id = 'sku_77' AND segments_date = '2026-07-15'")"
+	"$(google_partition "cost_micros" "$SINGLE_OBJECT_EXTRACTION" \
+		"AND account_id = 'acct_01' AND campaign_id = 'camp_003'
+		 AND product_id = 'sku_77' AND segments_date = '2026-07-15'")"
 check "R1 · the other source keeps its own schema" "$ROWS_PER_META_OBJECT" \
 	"$(query_clickhouse --query "SELECT count() FROM bronze.meta_ads_raw
 	                             WHERE _extracted_at = '$SINGLE_OBJECT_EXTRACTION'")"
