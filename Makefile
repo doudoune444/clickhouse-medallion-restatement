@@ -81,6 +81,10 @@ silver: ## Conform every Bronze source into silver.ads_daily
 		$(CLICKHOUSE_CLIENT) --queries-file "/$$f" || exit 1; \
 	done
 
+.PHONY: gold
+gold: ## Rebuild every gold.campaign_daily month present in silver
+	@scripts/rebuild-gold.sh
+
 .PHONY: query
 query: ## Run one SQL query against ClickHouse (make query Q="SELECT 1")
 	@$(CLICKHOUSE_CLIENT) --query "$(Q)"
