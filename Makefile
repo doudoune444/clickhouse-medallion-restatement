@@ -85,6 +85,10 @@ silver: ## Conform every Bronze source into silver.ads_daily
 gold: ## Rebuild every gold.campaign_daily month present in silver
 	@scripts/rebuild-gold.sh
 
+.PHONY: contracts
+contracts: ## Evaluate the data contracts on Silver and Gold (non-zero exit code on violation)
+	@scripts/check-data-contracts.sh
+
 .PHONY: query
 query: ## Run one SQL query against ClickHouse (make query Q="SELECT 1")
 	@$(CLICKHOUSE_CLIENT) --query "$(Q)"
